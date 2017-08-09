@@ -6,7 +6,7 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 25;
+size_t N = 10;
 double dt = 0.1;
 
 // This value assumes the model presented in the classroom is used.
@@ -20,7 +20,7 @@ double dt = 0.1;
 //
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
-double ref_v = 3.;
+double ref_v = 65.;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -61,20 +61,20 @@ class FG_eval {
 
     // The part of the cost based on the reference state.
     for (int t = 0; t < N; t++) {
-      fg[0] += CppAD::pow(vars[cte_start + t], 2);
-    //  fg[0] += CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += 20*CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 20*CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += 10*CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (int t = 0; t < N - 1; t++) {
-    //  fg[0] += CppAD::pow(vars[delta_start + t], 2);
-    //  fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 100*CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 100*CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (int t = 0; t < N - 2; t++) {
-    //  fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 500 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
       fg[0] += 100 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
@@ -196,15 +196,15 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   // NOTE: Feel free to change this to something else.
   // FIXME:
   for (int i = delta_start; i < a_start; i++) {
-    vars_lowerbound[i] = -0.01;//-0.436332;
-    vars_upperbound[i] = 0.01;//0.436332;
+    vars_lowerbound[i] = -0.436332;
+    vars_upperbound[i] = 0.436332;
   }
 
   // Acceleration/decceleration upper and lower limits.
   // NOTE: Feel free to change this to something else.
   for (int i = a_start; i < n_vars; i++) {
-    vars_lowerbound[i] = -0.4;
-    vars_upperbound[i] = 0.4;
+    vars_lowerbound[i] = -1.;
+    vars_upperbound[i] = 1.;
   }
 
 
@@ -267,6 +267,12 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   auto cost = solution.obj_value;
   std::cout << "Cost " << cost << std::endl;
 
+  pred_x.clear();
+  pred_y.clear();
+  for (size_t i=0; i<N; i++){
+    pred_x.push_back(solution.x[x_start + i]);
+    pred_y.push_back(solution.x[y_start + i]);
+  }
   // TODO: Return the first actuator values. The variables can be accessed with
   // `solution.x[i]`.
   //

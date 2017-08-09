@@ -126,7 +126,7 @@ int main() {
           double cte = polyeval(coeffs, 0.);
           // Due to the sign starting at 0, the orientation error is -f'(x).
           // derivative of coeffs[0] + coeffs[1] * x -> coeffs[1]
-          double epsi = 0. + atan(coeffs[1]);
+          double epsi = 0. - atan(coeffs[1]);
 
           std::cout << "cte" << std::endl;
           std::cout << cte << std::endl;
@@ -140,7 +140,7 @@ int main() {
           */
           
           Eigen::VectorXd state(6);
-          state << px, py, psi, v, cte, epsi;
+          state << 0, 0, 0, v, cte, epsi;
           
           std::vector<double> x_vals = {state[0]};
           std::vector<double> y_vals = {state[1]};
@@ -164,8 +164,11 @@ int main() {
           msgJson["throttle"] = throttle_value;
 
           //Display the MPC predicted trajectory 
-          vector<double> mpc_x_vals;
-          vector<double> mpc_y_vals;
+          vector<double> mpc_x_vals(mpc.pred_x.size());
+          vector<double> mpc_y_vals(mpc.pred_y.size());
+          // glob_to_local(mpc.pred_x, mpc.pred_y, psi, px, py, mpc_x_vals, mpc_y_vals);
+          mpc_x_vals = mpc.pred_x;
+          mpc_y_vals = mpc.pred_y;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line

@@ -11,7 +11,7 @@ class MPC {
   MPC();
 
   virtual ~MPC();
-
+  vector<double> pred_x, pred_y;
   // Solve the model given an initial state and polynomial coefficients.
   // Return the first actuatotions.
   vector<double> Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs);
