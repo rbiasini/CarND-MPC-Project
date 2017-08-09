@@ -151,25 +151,15 @@ int main() {
           std::vector<double> delta_vals = {};
           std::vector<double> a_vals = {};
 
-          int iters = 1; 
-          double steer_value;
-          double throttle_value;
-          for (size_t i = 0; i < iters; i++) {
-            std::cout << "Iteration " << i << std::endl;
         
-            auto vars = mpc.Solve(state, coeffs);
-            steer_value = vars[0];
-            throttle_value = vars[1];
-          }
+          auto vars = mpc.Solve(state, coeffs);
 
-
-
+          double steer_value = vars[0];
+          double throttle_value = vars[1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-          //double steer_value;
-          //double throttle_value;
           msgJson["steering_angle"] = -steer_value/deg2rad(25);
           msgJson["throttle"] = throttle_value;
 
