@@ -92,6 +92,22 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+          double delta = j[1]["steering_angle"];
+          double a = j[1]["throttle"];
+          
+          // convert into SI
+          v *= 0.44704;
+          delta *= -1.;
+          a *= 2.;
+
+          // consider latency
+          int latency_ms = 100;
+          const double Lf = 2.67;
+          double latency_s = latency_ms/1000. + 0.03;
+          px += v * cos(psi) * latency_s;
+          py += v * sin(psi) * latency_s;
+          psi += v * delta * latency_s / Lf;
+          v += a * latency_s;
 
 
           // move into car frame
@@ -151,8 +167,14 @@ int main() {
           std::vector<double> delta_vals = {};
           std::vector<double> a_vals = {};
 
+          auto t1 = std::chrono::high_resolution_clock::now();
         
           auto vars = mpc.Solve(state, coeffs);
+
+          auto t2 = std::chrono::high_resolution_clock::now();
+          std::cout << "Delta t2-t1: " 
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t2- t1).count()
+              << " milliseconds" << std::endl;
 
           double steer_value = vars[0];
           double throttle_value = vars[1];
@@ -177,8 +199,14 @@ int main() {
           msgJson["mpc_y"] = mpc_y_vals;
 
           //Display the waypoints/reference line
-          vector<double> next_x_vals = ptsx;
-          vector<double> next_y_vals = ptsy;
+          //vector<double> next_x_vals = ptsx;
+          //vector<double> next_y_vals = ptsy;
+
+          vector<double> next_x_vals(mpc.ref_x.size());
+          vector<double> next_y_vals(mpc.ref_y.size());
+          // glob_to_local(mpc.pred_x, mpc.pred_y, psi, px, py, mpc_x_vals, mpc_y_vals);
+          next_x_vals = mpc.ref_x;
+          next_y_vals = mpc.ref_y;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
@@ -198,7 +226,8 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          this_thread::sleep_for(chrono::milliseconds(100));
+          this_thread::sleep_for(chrono::milliseconds(latency_ms));
+          
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
