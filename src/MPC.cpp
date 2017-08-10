@@ -121,6 +121,8 @@ class FG_eval {
 
       AD<double> f0 = polyeval(coeffs, x0);
       AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * x0 + 3 * coeffs[3] * CppAD::pow(x0, 2));
+      // FIXME: shouldn;t we consider psides1 as below instead of psides0????
+      //AD<double> psides1 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * (x0 + v0 * CppAD::cos(psi0) * dt) + 3 * coeffs[3] * CppAD::pow((x0 + v0 * CppAD::cos(psi0) * dt), 2));
       
       // The idea here is to constraint this value to be 0.
       //
