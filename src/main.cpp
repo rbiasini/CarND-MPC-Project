@@ -93,21 +93,22 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
           double delta = j[1]["steering_angle"];
-          double a = j[1]["throttle"];
+          double throttle = j[1]["throttle"];
           
+          double a;
           // convert into SI
           v *= 0.44704;
           delta *= -1.;
-          if (a > 0.){
-            a *= 2.;
+          if (throttle > 0.){
+            a *= 2. * throttle;
           } else {
-            a *= 5.;
+            a *= 10. * throttle;
           }
 
           // consider latency
           int latency_ms = 100;
           const double Lf = 2.67;
-          double latency_s = latency_ms/1000. + 0.03;
+          double latency_s = latency_ms/1000. + 0.03; // 30 ms of computational time
           px += v * cos(psi) * latency_s;
           py += v * sin(psi) * latency_s;
           psi += v * delta * latency_s / Lf;
@@ -181,7 +182,14 @@ int main() {
               << " milliseconds" << std::endl;
 
           double steer_value = vars[0];
-          double throttle_value = vars[1];
+          double accel_value = vars[1];
+          double throttle_value;
+
+          if (accel_value > 0.) {
+            throttle_value = accel_value/2.;  // gas
+          } else {
+            throttle_value = accel_value/10.;  // gas
+          }
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
