@@ -98,7 +98,11 @@ int main() {
           // convert into SI
           v *= 0.44704;
           delta *= -1.;
-          a *= 2.;
+          if (a > 0.){
+            a *= 2.;
+          } else {
+            a *= 5.;
+          }
 
           // consider latency
           int latency_ms = 100;
@@ -199,14 +203,14 @@ int main() {
           msgJson["mpc_y"] = mpc_y_vals;
 
           //Display the waypoints/reference line
-          //vector<double> next_x_vals = ptsx;
-          //vector<double> next_y_vals = ptsy;
+          vector<double> next_x_vals = ptsx;
+          vector<double> next_y_vals = ptsy;
 
-          vector<double> next_x_vals(mpc.ref_x.size());
-          vector<double> next_y_vals(mpc.ref_y.size());
+          //vector<double> next_x_vals(mpc.ref_x.size());
+          //vector<double> next_y_vals(mpc.ref_y.size());
           // glob_to_local(mpc.pred_x, mpc.pred_y, psi, px, py, mpc_x_vals, mpc_y_vals);
-          next_x_vals = mpc.ref_x;
-          next_y_vals = mpc.ref_y;
+          //next_x_vals = mpc.ref_x;
+          //next_y_vals = mpc.ref_y;
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
